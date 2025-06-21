@@ -2,68 +2,47 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我的静态网站</title>
-  <style>
-    /* 全局样式 */
-    body { margin: 0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
-    a { color: #0078d4; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    header, footer { background-color: #f4f4f4; padding: 1rem 2rem; }
-    header h1, footer p { margin: 0; }
-    nav ul { list-style: none; padding: 0; margin: 0; display: flex; gap: 1rem; }
-    nav li { display: inline; }
-    main { padding: 2rem; }
-    .hero { background-color: #e1f0ff; padding: 2rem; border-radius: 8px; text-align: center; }
-    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
-    .feature-card { padding: 1rem; border: 1px solid #ddd; border-radius: 8px; }
-  </style>
+  <title>数字水母 · p5.js 演示</title>
+  <!-- 引入 p5.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 <body>
-  <header>
-    <h1>欢迎来到我的静态网站</h1>
-    <nav>
-      <ul>
-        <li><a href="#">首页</a></li>
-        <li><a href="#features">功能</a></li>
-        <li><a href="#contact">联系</a></li>
-      </ul>
-    </nav>
-  </header>
+  <script>
+    let t = 0;
+    function setup() {
+      createCanvas(400, 400);
+      background(9);
+      stroke(255, 66);  // 白色、透明度 66
+      noFill();
+    }
 
-  <main>
-    <!-- 主要展示区 -->
-    <section class="hero">
-      <h2>简单、轻量、快速</h2>
-      <p>这是一个基于 Azure Static Web Apps 的示例静态网站。</p>
-      <p><a href="#contact">立即联系</a></p>
-    </section>
+    function draw() {
+      background(9);
+      t += PI / 20;
 
-    <!-- 功能区 -->
-    <section id="features" class="features">
-      <div class="feature-card">
-        <h3>免费 TLS</h3>
-        <p>自动为自定义域名配置 HTTPS，保障数据安全。</p>
-      </div>
-      <div class="feature-card">
-        <h3>全球 CDN</h3>
-        <p>Azure 全球节点加速，访客体验更流畅。</p>
-      </div>
-      <div class="feature-card">
-        <h3>自动化部署</h3>
-        <p>GitHub Push 即可触发 CI/CD，快速上线更新。</p>
-      </div>
-    </section>
+      // 画 10000 个点
+      for (let i = 0; i < 1e4; i++) {
+        // 将一维 i 映射到 x,y
+        let x = i % 200;
+        let y = i / 43;
 
-    <!-- 联系区 -->
-    <section id="contact" style="margin-top: 2rem;">
-      <h2>联系我们</h2>
-      <p>邮箱：<a href="mailto:youremail@example.com">youremail@example.com</a></p>
-    </section>
-  </main>
+        // 计算参数
+        let k = 5 * cos(x / 14) * cos(y / 30);
+        let e = y / 8 - 13;
+        let d = dist(k, e, 0, 0);        // mag(k,e) = sqrt(k²+e²)
 
-  <footer>
-    <p>&copy; 2025 我的静态网站. 版权所有.</p>
-  </footer>
+        // 极坐标变换
+        let q = 60 
+              - 3 * sin(atan2(k, e) * e) 
+              + k * (3 + 4 / d * sin(d * d - t * 2));
+        let c = d / 2 + e / 99 - t / 18;
+
+        // 计算画布坐标并画点
+        let px = q * sin(c) + 200;
+        let py = (q + d * 9) * cos(c) + 200;
+        point(px, py);
+      }
+    }
+  </script>
 </body>
 </html>
