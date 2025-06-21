@@ -1,47 +1,74 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>数字水母 · p5.js 演示</title>
-  <!-- 引入 p5.js -->
+  <meta charset="UTF-8" />
+  <title>数字水母 · 图片叠加示例</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; overflow: hidden;
+    }
+    #jelly-container {
+      position: relative;
+      width: 100vw; height: 100vh;
+    }
+    /* 文字层 */
+    #jelly-text {
+      position: absolute;
+      top: 20px; left: 20px;
+      color: white; font-size: 24px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    /* 图片层 */
+    #overlay-img {
+      position: absolute;
+      top: 50px;    /* 调整图片位置 */
+      right: 50px;  /* 可改成 left/bottom */
+      width: 150px; /* 图片大小 */
+      z-index: 20;  /* 保证在文字和画布之上 */
+      pointer-events: none;
+    }
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 <body>
+  <div id="jelly-container">
+    <!-- 叠加图片 -->
+    <img id="overlay-img" src="https://github.com/Back04oorer/back04oorer_web/blob/main/test.jpg?raw=true" alt="叠加图标">
+    <!-- p5.js 会自动把 <canvas> 插入到这里 -->
+  </div>
+
   <script>
-    let t = 0;
+    let t = 0, offsetX = 100, offsetY = -50;
+
     function setup() {
-      createCanvas(400, 400);
+      let cnv = createCanvas(windowWidth, windowHeight);
+      cnv.parent('jelly-container');
       background(9);
-      stroke(255, 66);  // 白色、透明度 66
+      stroke(255, 96);
       noFill();
+      frameRate(30);
     }
 
     function draw() {
       background(9);
-      t += PI / 20;
-
-      // 画 10000 个点
+      t += PI/240;
+      const cx = width/2 + offsetX, cy = height/2 + offsetY;
       for (let i = 0; i < 1e4; i++) {
-        // 将一维 i 映射到 x,y
-        let x = i % 200;
-        let y = i / 43;
-
-        // 计算参数
-        let k = 5 * cos(x / 14) * cos(y / 30);
-        let e = y / 8 - 13;
-        let d = dist(k, e, 0, 0);        // mag(k,e) = sqrt(k²+e²)
-
-        // 极坐标变换
-        let q = 60 
-              - 3 * sin(atan2(k, e) * e) 
-              + k * (3 + 4 / d * sin(d * d - t * 2));
-        let c = d / 2 + e / 99 - t / 18;
-
-        // 计算画布坐标并画点
-        let px = q * sin(c) + 200;
-        let py = (q + d * 9) * cos(c) + 200;
-        point(px, py);
+        let x = i, y = i/235;
+        let k = (4 + sin(y*2 - t)*3)*cos(x/29);
+        let e = y/8 - 13;
+        let d = dist(k,e,0,0);
+        let q = 3*sin(k*2) + 0.3/k + sin(y/25)*k*(9 + 4*sin(e*9 - d*3 + t*2));
+        let c = d - t;
+        let px = q + 30*cos(c),
+            py = q*sin(c) + d*39 - 220;
+        point(px + cx, py + cy);
       }
+    }
+
+    function windowResized(){
+      resizeCanvas(windowWidth, windowHeight);
     }
   </script>
 </body>
