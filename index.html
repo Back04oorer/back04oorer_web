@@ -5,41 +5,25 @@
   <title>Back04oorer</title>
   <style>
     html, body {
-      margin: 0; padding: 0; overflow: hidden;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
     }
     #jelly-container {
       position: relative;
-      width: 100vw; height: 100vh;
-    }
-    /* 文字层 */
-    #jelly-text {
-      position: absolute;
-      top: 20px; left: 20px;
-      color: white; font-size: 24px;
-      z-index: 10;
-      pointer-events: none;
-    }
-    /* 图片层 */
-    #overlay-img {
-      position: absolute;
-      top: 50px;    /* 调整图片位置 */
-      right: 50px;  /* 可改成 left/bottom */
-      width: 150px; /* 图片大小 */
-      z-index: 20;  /* 保证在文字和画布之上 */
-      pointer-events: none;
+      width: 100vw;
+      height: 100vh;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 </head>
 <body>
   <div id="jelly-container">
-    <!-- 叠加图片 -->
-    <img id="overlay-img" src="https://github.com/Back04oorer/back04oorer_web/blob/main/test.jpg?raw=true" alt="叠加图标">
     <!-- p5.js 会自动把 <canvas> 插入到这里 -->
   </div>
 
   <script>
-    let t = 0, offsetX = 100, offsetY = -50;
+    let t = 0;
 
     function setup() {
       let cnv = createCanvas(windowWidth, windowHeight);
@@ -52,22 +36,25 @@
 
     function draw() {
       background(9);
-      t += PI/240;
-      const cx = width/2 + offsetX, cy = height/2 + offsetY;
+      t += PI / 240;
+      const scaleFactor = 3.0;            // 放大倍数
+      const cx = width * 0.75;            // 将图案放在画布右侧
+      const cy = (height * 0.01) - 50;
       for (let i = 0; i < 1e4; i++) {
-        let x = i, y = i/235;
-        let k = (4 + sin(y*2 - t)*3)*cos(x/29);
-        let e = y/8 - 13;
-        let d = dist(k,e,0,0);
-        let q = 3*sin(k*2) + 0.3/k + sin(y/25)*k*(9 + 4*sin(e*9 - d*3 + t*2));
+        let x = i;
+        let y = i / 235;
+        let k = (4 + sin(y * 2 - t) * 3) * cos(x / 29);
+        let e = y / 8 - 13;
+        let d = dist(k, e, 0, 0);
+        let q = 3 * sin(k * 2) + 0.3 / k + sin(y / 25) * k * (9 + 4 * sin(e * 9 - d * 3 + t * 2));
         let c = d - t;
-        let px = q + 30*cos(c),
-            py = q*sin(c) + d*39 - 220;
+        let px = (q + 30 * cos(c)) * scaleFactor;
+        let py = (q * sin(c) + d * 39 - 220) * scaleFactor;
         point(px + cx, py + cy);
       }
     }
 
-    function windowResized(){
+    function windowResized() {
       resizeCanvas(windowWidth, windowHeight);
     }
   </script>
