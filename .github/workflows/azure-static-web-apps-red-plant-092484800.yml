@@ -50,10 +50,11 @@ jobs:
 
       # 6. 清理 Cloudflare 缓存（可选）
       - name: Clear Cloudflare Cache
-        uses: cloudflare/wrangler-action@2.0.2
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           command: 'route purge-by-url https://www.back04oorer.com/*'
+
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
