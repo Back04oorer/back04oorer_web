@@ -11,21 +11,23 @@ on:
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    # 只在推送或打开/更新 PR 时执行
+    if: github.event_name == 'push' ||
+        (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
-      # 1. 拉取代码
+      # 1. 检出代码
       - uses: actions/checkout@v3
         with:
           submodules: true
           lfs: false
 
-      # 2. 安装 Node.js
+      # 2. 使用 Node.js 20.x 环境
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18.x'
+          node-version: '20.x'
 
       # 3. 安装依赖
       - name: Install dependencies
@@ -35,7 +37,7 @@ jobs:
       - name: Build with Vite
         run: npm run build
 
-      # 5. 部署到 Azure Static Web Apps 并跳过 Azure 侧构建
+      # 5. 部署到 Azure Static Web Apps，跳过 Azure 侧构建
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
@@ -46,7 +48,7 @@ jobs:
           app_location: "/"           
           api_location: ""            
           output_location: "dist"     
-          skip_app_build: true        # ← 跳过 Oryx 构建，直接上传 dist/
+          skip_app_build: true        # ← 跳过 Oryx 重建，直接上传 dist/
 
       # 6. 清理 Cloudflare 缓存（可选）
       - name: Clear Cloudflare Cache
@@ -54,7 +56,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           command: 'route purge-by-url https://www.back04oorer.com/*'
-
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
