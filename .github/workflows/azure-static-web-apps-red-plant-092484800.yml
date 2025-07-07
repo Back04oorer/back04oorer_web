@@ -50,13 +50,6 @@ jobs:
           output_location: "dist"     
           skip_app_build: true        # ← 跳过 Oryx 重建，直接上传 dist/
 
-      # 6. 清理 Cloudflare 缓存（可选）
-      - name: Clear Cloudflare Cache
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          command: 'route purge-by-url https://www.back04oorer.com/*'
-
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
