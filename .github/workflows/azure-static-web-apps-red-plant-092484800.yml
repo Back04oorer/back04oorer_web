@@ -10,54 +10,44 @@ on:
       - main
 
 jobs:
-  build_and_deploy_job:
-    # 只在推送或打开/更新 PR 时执行
+  build_and_deploy:
     if: github.event_name == 'push' ||
         (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
-    steps:
-      # 1. 检出代码
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          lfs: false
 
-      # 2. 使用 Node.js 20.x 环境
+    steps:
+      # 1. Checkout
+      - uses: actions/checkout@v3
+
+      # 2. 安装 Node 20.x（支持 crypto.hash）
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
-      # 3. 安装依赖
-      - name: Install dependencies
-        run: npm ci
+      # 3. 安装依赖并构建（Vite → dist/）
+      - name: Install & Build
+        run: |
+          npm ci
+          npm run build
 
-      # 4. 本地构建 (Vite -> dist/)
-      - name: Build with Vite
-        run: npm run build
-
-      # 5. 部署到 Azure Static Web Apps，跳过 Azure 侧构建
+      # 4. 上传 dist/ 到 Azure Static Web Apps，并跳过 Azure 侧 Oryx 构建
       - name: Deploy to Azure Static Web Apps
-        id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_PLANT_092484800 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/"           
-          api_location: ""            
-          output_location: "dist"     
-          skip_app_build: true        # ← 跳过 Oryx 重建，直接上传 dist/
+          app_location: "/"          # 仓库根，不再用它做构建
+          api_location: ""           # 无后端
+          output_location: "dist"    # ← 指向打包结果目录
+          skip_app_build: true       # ← 跳过 Oryx，直接把 dist/ 上传
 
-  close_pull_request_job:
+  close_pull_request:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
-    name: Close Pull Request Job
     steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
+      - uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_PLANT_092484800 }}
           action: "close"
