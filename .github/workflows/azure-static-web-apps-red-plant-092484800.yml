@@ -1,18 +1,25 @@
-name: Build & Deploy Static Site to Azure Storage
+name: Azure Static Web Apps CI/CD
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
 
 jobs:
-  build_and_deploy:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
+    name: Build and Deploy Job
     steps:
       # 1. 拉取代码
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
 
       # 2. 安装 Node.js
       - name: Setup Node.js
@@ -20,25 +27,42 @@ jobs:
         with:
           node-version: '18.x'
 
-      # 3. 安装 NPM 依赖
+      # 3. 安装依赖
       - name: Install dependencies
         run: npm ci
 
-      # 4. 构建项目（Vite -> dist/）
-      - name: Build project
+      # 4. 本地构建 (Vite -> dist/)
+      - name: Build with Vite
         run: npm run build
 
-      # 5. 部署到 Azure Storage Static Website
-      - name: Deploy to Azure Storage Static Website
-        uses: azure/storage-blob-upload@v1
+      # 5. 部署到 Azure Static Web Apps 并跳过 Azure 侧构建
+      - name: Deploy to Azure Static Web Apps
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
         with:
-          connection-string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING }}
-          container-name: '$web'
-          source-directory: './dist'
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_PLANT_092484800 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"           
+          api_location: ""            
+          output_location: "dist"     
+          skip_app_build: true        # ← 跳过 Oryx 构建，直接上传 dist/
 
-      # 6. （可选）清理 Cloudflare 缓存
+      # 6. 清理 Cloudflare 缓存（可选）
       - name: Clear Cloudflare Cache
         uses: cloudflare/wrangler-action@2.0.2
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           command: 'route purge-by-url https://www.back04oorer.com/*'
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_PLANT_092484800 }}
+          action: "close"
