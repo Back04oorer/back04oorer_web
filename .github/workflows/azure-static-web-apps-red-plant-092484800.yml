@@ -44,9 +44,3 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_PLANT_092484800 }}
           action: "close"
-
-  - name: Clear Cloudflare Cache
-    uses: cloudflare/wrangler-action@2.0.2
-    with:
-      apiToken: ${{ secrets.CF_API_TOKEN }}
-      command: 'route purge-by-url https://www.back04oorer.com/*'
