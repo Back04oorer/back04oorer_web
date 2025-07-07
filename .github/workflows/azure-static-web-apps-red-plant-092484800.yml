@@ -38,9 +38,9 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_RED_PLANT_092484800 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/"          # 仓库根，不再用它做构建
+          app_location: "dist"          # 仓库根，不再用它做构建
           api_location: ""           # 无后端
-          output_location: "dist"    # ← 指向打包结果目录
+          output_location: ""    # ← 指向打包结果目录
           skip_app_build: true       # ← 跳过 Oryx，直接把 dist/ 上传
 
   close_pull_request:
