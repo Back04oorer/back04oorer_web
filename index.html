@@ -1,73 +1,25 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <title>Back04oorer with Text</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-    }
-    #jelly-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
-</head>
-<body>
-  <div id="jelly-container"></div>
-
-  <script>
-    let t = 0;
-
-    function setup() {
-      let cnv = createCanvas(windowWidth, windowHeight);
-      cnv.parent('jelly-container');
-      // 文字样式
-      textSize(32);           // 字号 32px
-      textFont('sans-serif'); // 字体（也可以改成你加载的自定义字体）
-      fill(0);                // 黑色填充
-      textAlign(LEFT, TOP);   // 左对齐、顶部对齐
-      
-      noFill();               // 点阵不填充
-      stroke(0);              // 点阵用黑色描边
-      frameRate(30);
-    }
-
-    function draw() {
-      background(255);
-      t += PI / 240;
-
-      // --- 绘制文字 ---
-      // 位置可以根据需要调整 x,y
-      text("Back04oorer", 20, 20);
-
-      // --- 原有的点阵绘制 ---
-      const scaleFactor = 3.0;
-      const cx = width * 0.75;
-      const cy = height * 0.01 - 50;
-      for (let i = 0; i < 1e4; i++) {
-        let x = i;
-        let y = i / 235;
-        let k = (4 + sin(y * 2 - t) * 3) * cos(x / 29);
-        let e = y / 8 - 13;
-        let d = dist(k, e, 0, 0);
-        let q = 3 * sin(k * 2)
-              + 0.3 / k
-              + sin(y / 25) * k * (9 + 4 * sin(e * 9 - d * 3 + t * 2));
-        let c = d - t;
-        let px = (q + 30 * cos(c)) * scaleFactor;
-        let py = (q * sin(c) + d * 39 - 220) * scaleFactor;
-        point(px + cx, py + cy);
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Back04oorer with Text</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
       }
-    }
-
-    function windowResized() {
-      resizeCanvas(windowWidth, windowHeight);
-    }
-  </script>
-</body>
+      #jelly-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+  </head>
+  <body>
+    <!-- 挂载点 id 必须和 main.jsx 里一模一样 -->
+    <div id="app"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
