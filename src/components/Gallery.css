@@ -1,30 +1,76 @@
+/* ========= 缩略图网格 ========= */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
-  gap: 8px;
-  padding: 8px;
+  width: 100%;
+
+  /* 让网格根据内容自然增高（不要固定 height:100%） */
+  /* height: 100%; */
+
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-auto-rows: 400px;
+  gap: 12px;
+  padding: 12px;
+  justify-content: start;
+  align-content: start;
+
+  /* 关键：启用纵向滚动 & 移动端惯性 */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
+
+/* 缩略图 */
 .gallery-thumb {
-  width: 100%; height: 100%; object-fit: cover;
-  cursor: pointer; border-radius: 4px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  border-radius: 4px;
   transition: transform .2s;
 }
 .gallery-thumb:hover { transform: scale(1.05); }
 
+/* ========= Lightbox 大图层 ========= */
 .lightbox {
   position: fixed;
-  top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.8);
-  display: flex; align-items: center; justify-content: center;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 1000;
+  touch-action: none;             /* 让手势完全交给 react-swipeable */
 }
+
+/* 包裹层（真正绑定 swipe） */
+.lightbox-inner {
+  width: 80%;
+  height: 80%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* 大图 */
 .lightbox-img {
-  max-width: 90%; max-height: 90%; border-radius: 4px;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 4px;
 }
+
+/* 手动左右按钮（可选） */
 .lightbox-nav {
-  position: absolute; top:50%; transform: translateY(-50%);
-  background:none; border:none; color:#fff; font-size:2rem;
-  cursor:pointer; padding:0 12px; user-select:none;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2.4rem;
+  padding: 0 18px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 1001;
 }
-.lightbox-nav.prev { left:10px; }
-.lightbox-nav.next { right:10px; }
+.lightbox-nav.prev { left: 18px; }
+.lightbox-nav.next { right: 18px; }
