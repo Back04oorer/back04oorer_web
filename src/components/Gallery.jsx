@@ -1,47 +1,64 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import './Gallery.css';
 
 /**
- * 动态导入 assets/images 下一级子文件夹内的所有图片
- * 假设只一层子文件夹，如 assets/images/landscape/*.jpg
+ * 使用 vite-imagetools 生成：
+ * - placeholder:极低分辨率 Base64 模糊图
+ * - thumb:400px 宽 WebP 缩略图
+ * - full:原图 URL
  */
-const modules = import.meta.glob('../assets/images/*/*.{png,jpg,jpeg}', {
-  eager: true,
-  as: 'url',
+const placeholderModules = import.meta.glob(
+  '../assets/images/*/*.{png,jpg,jpeg}',
+  { eager: true, query: '?width=20&format=webp', import: 'default' }
+);
+const thumbModules = import.meta.glob(
+  '../assets/images/*/*.{png,jpg,jpeg}',
+  { eager: true, query: '?width=400&format=webp', import: 'default' }
+);
+const fullModules = import.meta.glob(
+  '../assets/images/*/*.{png,jpg,jpeg}',
+  { eager: true, query: '?url', import: 'default' }
+);
+
+// 按文件路径分组并排序
+function groupByPath(mods) {
+  return Object.entries(mods).reduce((acc, [path, url]) => {
+    const parts = path.split('/');
+    const folder = parts[parts.length - 2];
+    if (!acc[folder]) acc[folder] = [];
+    acc[folder].push({ path, url });
+    return acc;
+  }, {});
+}
+
+const placeholdersByFolder = groupByPath(placeholderModules);
+const thumbsByFolder       = groupByPath(thumbModules);
+const fullByFolder         = groupByPath(fullModules);
+
+// 对各组按路径排序，确保占位图、缩略图和原图一一对应
+[placeholdersByFolder, thumbsByFolder, fullByFolder].forEach(groupMap => {
+  Object.values(groupMap).forEach(arr =>
+    arr.sort((a, b) => a.path.localeCompare(b.path))
+  );
 });
 
-// 按子文件夹分组并排序
-const imagesByFolder = Object.entries(modules).reduce((acc, [path, url]) => {
-  // 解析子文件夹名：倒数第二个路径段
-  const parts = path.split('/');
-  const folder = parts[parts.length - 2];
-  if (!acc[folder]) acc[folder] = [];
-  acc[folder].push(url);
-  return acc;
-}, {});
-
-// 对每组图片进行排序，保证加载顺序一致
-Object.values(imagesByFolder).forEach(arr => arr.sort());
-
 export default function Gallery() {
-  // lightbox state: open, 当前组名, 以及索引
   const [lightbox, setLightbox] = useState({ open: false, folder: '', idx: 0 });
 
-  // 展平后的列表，用于全局导航或按组导航
-  const flatList = useMemo(() => {
-    return Object.entries(imagesByFolder)
-      .map(([folder, urls]) => urls.map(url => ({ folder, url })))
-      .reduce((all, group) => all.concat(group), []);
-  }, []);
-
-  // 打开某组的第 i 张
   const openAt = (folder, idx) => setLightbox({ open: true, folder, idx });
-  const close = () => setLightbox({ open: false, folder: '', idx: 0 });
+  const close  = () => setLightbox({ open: false, folder: '', idx: 0 });
 
-  // 在当前组内上/下张
+  // 预加载下一张大图
+  useEffect(() => {
+    if (!lightbox.open) return;
+    const arr = fullByFolder[lightbox.folder];
+    const nextUrl = arr[(lightbox.idx + 1) % arr.length].url;
+    new Image().src = nextUrl;
+  }, [lightbox]);
+
   const prev = () => {
-    const arr = imagesByFolder[lightbox.folder];
+    const arr = fullByFolder[lightbox.folder];
     setLightbox(b => ({
       open: true,
       folder: b.folder,
@@ -49,7 +66,7 @@ export default function Gallery() {
     }));
   };
   const next = () => {
-    const arr = imagesByFolder[lightbox.folder];
+    const arr = fullByFolder[lightbox.folder];
     setLightbox(b => ({
       open: true,
       folder: b.folder,
@@ -57,10 +74,9 @@ export default function Gallery() {
     }));
   };
 
-  // swipe handlers
   const swipeHandlers = useSwipeable({
-    onSwipedUp: () => next(),
-    onSwipedDown: () => prev(),
+    onSwipedUp: next,
+    onSwipedDown: prev,
     trackTouch: true,
     trackMouse: true,
     delta: 30,
@@ -70,30 +86,46 @@ export default function Gallery() {
 
   return (
     <>
-      {/* 针对子文件夹渲染多组画廊 */}
-      {Object.entries(imagesByFolder).map(([folder, urls]) => (
+      {Object.keys(thumbsByFolder).map(folder => (
         <div key={folder} className="gallery-group">
           <h2 className="gallery-title">{folder}</h2>
           <div className="gallery-grid">
-            {urls.map((src, i) => (
-              <img
-                key={i}
-                src={src}
-                alt={`${folder}-thumb-${i}`}
-                className="gallery-thumb"
-                onClick={() => openAt(folder, i)}
-              />
-            ))}
+            {thumbsByFolder[folder].map((item, i) => {
+              const placeholder = placeholdersByFolder[folder]?.[i]?.url;
+              const thumbUrl = item.url;
+              return (
+                <div key={i} className="gallery-thumb-wrapper">
+                  {/* 低质量占位图 */}
+                  <img
+                    className="gallery-thumb placeholder"
+                    src={placeholder}
+                    aria-hidden="true"
+                  />
+                  {/* 缩略图 */}
+                  <img
+                    className="gallery-thumb actual"
+                    src={thumbUrl}
+                    loading="lazy"
+                    alt={`${folder}-thumb-${i}`}
+                    onClick={() => openAt(folder, i)}
+                    onLoad={e => {
+                      e.currentTarget.classList.add('actual-loaded');
+                      e.currentTarget.previousSibling.style.opacity = '0';
+                    }}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
 
-      {/* Lightbox */}
       {lightbox.open && (
         <div className="lightbox" onClick={close}>
           <div className="lightbox-inner" {...swipeHandlers}>
             <img
-              src={imagesByFolder[lightbox.folder][lightbox.idx]}
+              src={fullByFolder[lightbox.folder][lightbox.idx].url}
+              loading="eager"
               alt={`${lightbox.folder}-large-${lightbox.idx}`}
               className="lightbox-img"
             />

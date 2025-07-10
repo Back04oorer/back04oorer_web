@@ -1,7 +1,9 @@
+// src/main.jsx
 import React from 'react';
-import { createRoot } from 'react-dom/client';
+import ReactDOM from 'react-dom/client';
 import App from './App';
-import './index.css';  // 如果有全局样式
+import './index.css';   // 同样，如果有全局样式
 
-const container = document.getElementById('app');
-createRoot(container).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <App />
+);

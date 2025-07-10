@@ -1,19 +1,19 @@
-/* ========= 缩略图网格 ========= */
+.gallery-group {
+  margin-bottom: 2rem;
+}
+.gallery-title {
+  margin: 0 12px;
+  font-size: 1.5rem;
+  color: #333;
+}
+
+/* 缩略图网格 */
 .gallery-grid {
   display: grid;
-  width: 100%;
-
-  /* 让网格根据内容自然增高（不要固定 height:100%） */
-  /* height: 100%; */
-
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  grid-auto-rows: 300px;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  grid-auto-rows: 400px;
   gap: 12px;
   padding: 12px;
-  justify-content: start;
-  align-content: start;
-
-  /* 关键：启用纵向滚动 & 移动端惯性 */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -27,21 +27,21 @@
   border-radius: 4px;
   transition: transform .2s;
 }
-.gallery-thumb:hover { transform: scale(1.05); }
+.gallery-thumb:hover {
+  transform: scale(1.05);
+}
 
-/* ========= Lightbox 大图层 ========= */
+/* Lightbox */
 .lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0,0,0,0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  touch-action: none;             /* 让手势完全交给 react-swipeable */
+  touch-action: none;
 }
-
-/* 包裹层（真正绑定 swipe） */
 .lightbox-inner {
   width: 80%;
   height: 80%;
@@ -50,15 +50,11 @@
   justify-content: center;
   overflow: hidden;
 }
-
-/* 大图 */
 .lightbox-img {
   max-width: 100%;
   max-height: 100%;
   border-radius: 4px;
 }
-
-/* 手动左右按钮（可选） */
 .lightbox-nav {
   position: absolute;
   top: 50%;
@@ -74,3 +70,42 @@
 }
 .lightbox-nav.prev { left: 18px; }
 .lightbox-nav.next { right: 18px; }
+
+/* ===== LQIP 占位图包裹器 ===== */
+.gallery-thumb-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 占位图（超低分辨率、模糊） */
+.gallery-thumb-wrapper .placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(20px);
+  transform: scale(1.1);
+  transition: opacity 0.3s ease-out;
+  will-change: opacity;
+}
+
+/* 真正的缩略图 */
+.gallery-thumb-wrapper .actual {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: opacity 0.3s ease-in;
+  opacity: 0;
+}
+
+/* 加载完成后显示真图并隐藏占位图 */
+.gallery-thumb-wrapper .actual-loaded {
+  opacity: 1;
+}
