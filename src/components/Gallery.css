@@ -6,8 +6,8 @@
   /* 让网格根据内容自然增高（不要固定 height:100%） */
   /* height: 100%; */
 
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  grid-auto-rows: 400px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-auto-rows: 300px;
   gap: 12px;
   padding: 12px;
   justify-content: start;
